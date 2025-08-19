@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">Submit Your Complaint</h1>
+        <p class="text-lg text-gray-600">Our AI-powered system will automatically classify your complaint for faster processing</p>
+    </div>
+
+    <!-- Success Message -->
+    {% if request.args.get('success') %}
+    <div id="success-message" class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+        <div class="flex items-center">
+            <i data-lucide="check-circle" class="w-5 h-5 text-green-600 mr-2"></i>
+            <p class="text-green-800 font-medium">Complaint submitted successfully!</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <form id="complaint-form" method="POST" action="/submit-complaint" class="space-y-8">
+        <!-- Complaint Text Input -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Describe Your Complaint</h2>
+            <div class="space-y-4">
+                <div>
+                    <label for="complaint_text" class="block text-sm font-medium text-gray-700 mb-2">
+                        Complaint Details *
+                    </label>
+                    <textarea
+                        id="complaint_text"
+                        name="complaint_text"
+                        rows="6"
+                        required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secp-blue focus:border-transparent resize-none"
+                        placeholder="Please describe your complaint in detail. Include relevant dates, amounts, and any other pertinent information..."
+                    ></textarea>
+                </div>
+                <button
+                    type="button"
+                    id="classify-btn"
+                    class="inline-flex items-center px-6 py-3 bg-secp-blue text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <i data-lucide="brain-circuit" class="w-5 h-5 mr-2"></i>
+                    <span id="classify-text">Classify with AI</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- AI Classification Results -->
+        <div id="ai-results" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hidden">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">AI Classification Results</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div class="bg-blue-50 rounded-lg p-4">
+                    <p class="text-sm font-medium text-blue-900">Category</p>
+                    <p id="ai-category" class="text-lg font-semibold text-blue-700"></p>
+                </div>
+                <div class="bg-green-50 rounded-lg p-4">
+                    <p class="text-sm font-medium text-green-900">Subcategory</p>
+                    <p id="ai-subcategory" class="text-lg font-semibold text-green-700"></p>
+                </div>
+                <div class="bg-purple-50 rounded-lg p-4">
+                    <p class="text-sm font-medium text-purple-900">Nature of Issue</p>
+                    <p id="ai-nature" class="text-lg font-semibold text-purple-700"></p>
+                </div>
+            </div>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm text-gray-600">Confidence:</span>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-32 bg-gray-200 rounded-full h-2">
+                            <div id="confidence-bar" class="bg-secp-green h-2 rounded-full transition-all duration-500"></div>
+                        </div>
+                        <span id="confidence-text" class="text-sm font-medium text-gray-700"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manual Classification Section -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Manual Classification</h3>
+            <p class="text-sm text-gray-600 mb-6">Review and adjust the classification as needed</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <!-- Category Dropdown -->
+                <div>
+                    <label for="category" class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                    <select id="category" name="category" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secp-blue focus:border-transparent">
+                        <option value="">Select Category</option>
+                        <option value="Insurance Services">Insurance Services</option>
+                        <option value="Brokerage Services">Brokerage Services</option>
+                        <option value="Investment Services">Investment Services</option>
+                        <option value="Pension Services">Pension Services</option>
+                        <option value="Banking Services">Banking Services</option>
+                        <option value="Capital Markets">Capital Markets</option>
+                    </select>
+                </div>
+
+                <!-- Subcategory Dropdown -->
+                <div>
+                    <label for="subcategory" class="block text-sm font-medium text-gray-700 mb-2">Subcategory *</label>
+                    <select id="subcategory" name="subcategory" required disabled class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secp-blue focus:border-transparent disabled:bg-gray-100">
+                        <option value="">Select Subcategory</option>
+                    </select>
+                </div>
+
+                <!-- Nature of Issue Dropdown -->
+                <div>
+                    <label for="nature_of_issue" class="block text-sm font-medium text-gray-700 mb-2">Nature of Issue *</label>
+                    <select id="nature_of_issue" name="nature_of_issue" required disabled class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secp-blue focus:border-transparent disabled:bg-gray-100">
+                        <option value="">Select Nature of Issue</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Apply Changes Button -->
+            <div class="flex items-center space-x-4 mb-6">
+                <button
+                    type="button"
+                    id="apply-changes-btn"
+                    class="inline-flex items-center px-6 py-3 bg-secp-green text-white font-medium rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <i data-lucide="check" class="w-5 h-5 mr-2"></i>
+                    Apply Changes
+                </button>
+                <div id="changes-applied" class="hidden flex items-center text-green-600">
+                    <i data-lucide="check-circle" class="w-5 h-5 mr-2"></i>
+                    <span class="font-medium">Changes Applied Successfully!</span>
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            <div id="error-message" class="hidden bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <div class="flex items-center">
+                    <i data-lucide="alert-circle" class="w-5 h-5 text-red-600 mr-2"></i>
+                    <p class="text-red-800 font-medium">Fill the fields first</p>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button
+                type="submit"
+                id="submit-btn"
+                disabled
+                class="w-full inline-flex items-center justify-center px-6 py-4 bg-secp-blue text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+                <i data-lucide="send" class="w-5 h-5 mr-2"></i>
+                Submit Complaint
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
